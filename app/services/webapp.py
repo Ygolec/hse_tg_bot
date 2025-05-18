@@ -2,6 +2,7 @@ import os
 import logging
 from typing import Dict, Optional, Any
 from app.services.directus import make_directus_request
+from urllib.parse import quote
 
 
 logger = logging.getLogger(__name__)
@@ -94,6 +95,8 @@ def check_checkin_status(user_id: int) -> str:
             if floor_response and "data" in floor_response:
                 floor_data = floor_response["data"]
                 floor_number = floor_data.get("floor_number", "Неизвестно")
+                if isinstance(floor_number, int):
+                    floor_number += 1
                 accommodation_id = floor_data.get("accommodation_id")
                 accommodation_address_id = floor_data.get("accommodation_address")
 
@@ -159,19 +162,19 @@ def check_checkin_status(user_id: int) -> str:
                     address_parts.append(f"корп. {corpus}")
 
                 address = ", ".join(address_parts) if address_parts else "Неизвестно"
+                yandex_maps_url = f"https://yandex.ru/maps/?text={quote(address)}"
 
-
-        message = f"✅ Вы заселены!\n\n"
-        message += f"Общежитие: {accommodation_name}\n"
-        message += f"Тип: {accommodation_type}\n"
-        message += f"Адрес: {address}\n"
-        message += f"Этаж: {floor_number}\n"
+        message = f"<b>✅ Вы заселены!</b>\n\n"
+        message += f"<b>Общежитие:</b> {accommodation_name}\n"
+        message += f"<b>Тип:</b> {accommodation_type}\n"
+        message += f"<b>Адрес:</b> <a href=\"{yandex_maps_url}\">{address}</a>\n"
+        message += f"<b>Этаж:</b> {floor_number}\n"
 
         if apartment_number:
-            message += f"Квартира/Блок: {apartment_number}\n"
+            message += f"<b>Номер квартиры/блока:</b> {apartment_number}\n"
 
-        message += f"Комната: {room_number}\n"
-        message += f"Вместимость комнаты: {max_capacity} чел."
+        message += f"<b>Номер комнаты:</b> {room_number}\n"
+        message += f"<b>Вместимость комнаты:</b> {max_capacity} чел."
 
         return message
 
@@ -263,7 +266,7 @@ def check_relocation_status(user_id: int) -> str:
                 "fields": ["id", "status"]
             }
         )
-
+        print(matches_response)
         matches_count = 0
         if matches_response and "data" in matches_response:
             matches_count = len(matches_response["data"])
@@ -276,15 +279,15 @@ def check_relocation_status(user_id: int) -> str:
                     approved_match = match
                     break
 
-
-        message = f"✅ У вас есть заявка на переселение\n\n"
-        message += f"Переселение: {relocation_name}\n"
-        message += f"Статус: {status_text}\n"
-        message += f"Количество заявок на вашу комнату: {matches_count}\n"
-
-
+        message = "<b>✅ У вас есть заявка на переселение</b>\n\n"
+        message += f"<b>Переселение:</b> {relocation_name.replace('<p>', '').replace('</p>', '')}\n"
+        message += f"<b>Статус:</b> {status_text}\n"
+        message += f"<b>Количество заявок на вашу комнату:</b> {matches_count}\n"
+        print(application_status)
+        print(
+            approved_match)
         if application_status == "ended" and approved_match:
-
+            print('123')
             match_id = approved_match.get("id")
             match_response = make_directus_request(
                 endpoint=f"/items/student_relocation_applications_match/{match_id}",
@@ -357,8 +360,9 @@ def check_relocation_status(user_id: int) -> str:
                             last_name = user_data.get("last_name", "")
                             match_user_name = f"{first_name} {last_name}".strip() or "Неизвестный пользователь"
 
-                    message += f"\nВы переселяетесь из {from_accommodation_name} в {to_accommodation_name}"
-                    message += f"\nВместе с: {match_user_name}"
+                    message += f"\n<b>Вы переселяетесь:</b>\n"
+                    message += f"Из: {from_accommodation_name}</a>\n"
+                    message += f"В: {to_accommodation_name}</a>\n"
 
         return message
 
