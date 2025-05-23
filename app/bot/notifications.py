@@ -30,7 +30,7 @@ def format_notification(notification_type, message, status=None):
     
     formatted_message = f"{header}\n\n{message}"
     
-    if status:
-        formatted_message += f"\n\nСтатус: {status}"
+    # if status:
+    #     formatted_message += f"\n\nСтатус: {status}"
     
     return formatted_message

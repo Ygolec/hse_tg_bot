@@ -28,7 +28,6 @@ setup_routes(app, bot)
 
 @app.on_event("startup")
 async def startup_event():
-
     logger.info("Starting Telegram bot...")
     try:
 
