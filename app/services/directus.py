@@ -93,7 +93,7 @@ def get_bus_schedule() -> Optional[Dict[str, Any]]:
             }
         
 
-        image_url = f"{directus_url.rstrip('/')}/assets/{image_id}"
+        image_url = f"https://directus.hse-compass.ru/assets/{image_id}"
         
         return {
             "id": schedule.get("id"),
